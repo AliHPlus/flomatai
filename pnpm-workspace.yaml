@@ -1,0 +1,7 @@
+packages:
+  - "packages/core"
+  - "packages/providers/*"
+  - "packages/state/*"
+  - "packages/bridge-python"
+  - "packages/cli"
+  - "examples/*"

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.js.map
+*.d.ts.map
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+flowforge.db
+*.db-journal
+.pnpm-store/
+coverage/
+.nyc_output/
+tmp/
