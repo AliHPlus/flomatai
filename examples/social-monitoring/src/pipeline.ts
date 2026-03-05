@@ -30,32 +30,37 @@ import { draftResponseSkill } from '../skills/draft-response.js';
 import { generateDigestSkill } from '../skills/generate-digest.js';
 
 // Sub-pipeline: classify a single mention
+// Each item passed to this sub-pipeline is already enriched:
+//   { mention, brand, keywords }
+// because mapOver passes the item as both pipelineInput AND previousOutput,
+// but the parent pipeline's pipelineInput is NOT forwarded.
 const classifyPipeline = Pipeline.create('classify-single-mention')
   .step('classify', classifyMentionSkill, {
     input: (ctx) => {
-      const mention = ctx.previousOutput as Record<string, unknown>;
-      const pi = ctx.pipelineInput as { brand: string; keywords: string[] };
+      // item = { mention, brand, keywords } — enriched before mapOver
+      const item = ctx.previousOutput as { mention: Record<string, unknown>; brand: string; keywords: string[] };
       return {
-        mention,
-        brand: pi.brand,
-        keywords: pi.keywords,
+        mention: item.mention,
+        brand: item.brand,
+        keywords: item.keywords,
       };
     },
   })
   .build();
 
 // Sub-pipeline: draft a response for a high-priority mention
+// Each item passed to this sub-pipeline is already enriched:
+//   { mention, classification, brand, brandVoice? }
 const draftPipeline = Pipeline.create('draft-single-response')
   .step('draft', draftResponseSkill, {
     input: (ctx) => {
-      // previousOutput contains { mention, classification } merged by the prepare step
-      const item = ctx.previousOutput as Record<string, unknown>;
-      const pi = ctx.pipelineInput as { brand: string; brandVoice?: string };
+      // item = { mention, classification, brand, brandVoice? } — enriched before mapOver
+      const item = ctx.previousOutput as { mention: Record<string, unknown>; classification: Record<string, unknown>; brand: string; brandVoice?: string };
       return {
-        mention: item['mention'],
-        classification: item['classification'],
-        brand: pi.brand,
-        brandVoice: pi.brandVoice,
+        mention: item.mention,
+        classification: item.classification,
+        brand: item.brand,
+        brandVoice: item.brandVoice,
       };
     },
   })
@@ -94,13 +99,24 @@ const collectAndFilterSkill = TransformSkill.create({
   },
 });
 
-// Skill: assemble everything for the digest
-const assembleDigestInputSkill = TransformSkill.create({
-  name: 'assemble-digest-input',
-  description: 'Assembles all data for the digest generation step',
+// Skill: enrich mentions with brand/keywords so sub-pipelines can access them
+// mapOver passes each item as the sub-pipeline's pipelineInput, NOT the parent's pipelineInput
+const enrichMentionsSkill = TransformSkill.create({
+  name: 'enrich-mentions',
+  description: 'Embeds brand and keywords into each mention item for sub-pipeline access',
   inputSchema: z.record(z.unknown()),
-  outputSchema: z.record(z.unknown()),
-  transform: (input) => input,
+  outputSchema: z.object({
+    enrichedMentions: z.array(z.record(z.unknown())),
+  }),
+  transform: (input) => {
+    const inp = input as { mentions: Array<Record<string, unknown>>; brand: string; keywords: string[] };
+    const enrichedMentions = inp.mentions.map((m) => ({
+      mention: m,
+      brand: inp.brand,
+      keywords: inp.keywords,
+    }));
+    return { enrichedMentions };
+  },
 });
 
 export const socialMonitoringPipeline = Pipeline.create('social-monitoring')
@@ -131,14 +147,29 @@ export const socialMonitoringPipeline = Pipeline.create('social-monitoring')
     },
   })
 
-  // Step 2: Classify all mentions in parallel (concurrency=3)
-  .mapOver('mentions', classifyPipeline, {
+  // Step 2: Enrich mentions with brand/keywords so sub-pipelines can access them
+  // (mapOver only passes the item as the sub-pipeline input, not the parent pipelineInput)
+  .step('enrich', enrichMentionsSkill, {
+    input: (ctx) => {
+      const pi = ctx.pipelineInput as { brand: string; keywords: string[] };
+      const fetchOutput = ctx.stepOutputs['fetch'] as { mentions: Array<Record<string, unknown>> };
+      return {
+        mentions: fetchOutput.mentions,
+        brand: pi.brand,
+        keywords: pi.keywords,
+      };
+    },
+  })
+
+  // Step 3: Classify all mentions in parallel (concurrency=3)
+  // Each item is { mention, brand, keywords } — brand/keywords are embedded
+  .mapOver('enrichedMentions', classifyPipeline, {
     concurrency: 3,
     onItemError: 'skip',
     name: 'classify-all',
   })
 
-  // Step 3: Collect classifications, find urgent items needing responses
+  // Step 4: Collect classifications, find urgent items needing responses
   .step('collect', collectAndFilterSkill, {
     input: (ctx) => {
       const fetchOutput = ctx.stepOutputs['fetch'] as { mentions: Array<Record<string, unknown>> };
@@ -149,14 +180,51 @@ export const socialMonitoringPipeline = Pipeline.create('social-monitoring')
     },
   })
 
-  // Step 4: Draft responses for urgent/requiring-response mentions
+  // Step 5: Enrich urgent items with brand/brandVoice for the draft sub-pipeline
+  .step('enrich-urgent', TransformSkill.create({
+    name: 'enrich-urgent-items',
+    description: 'Embeds brand and brandVoice into each urgent item for draft sub-pipeline access',
+    inputSchema: z.record(z.unknown()),
+    outputSchema: z.object({ urgentItems: z.array(z.record(z.unknown())) }),
+    transform: (input) => {
+      const inp = input as {
+        allClassifications: Array<Record<string, unknown>>;
+        urgentItems: Array<{ mention: Record<string, unknown>; classification: Record<string, unknown> }>;
+        brand?: string;
+        brandVoice?: string;
+      };
+      const urgentItems = inp.urgentItems.map((item) => ({
+        mention: item.mention,
+        classification: item.classification,
+        brand: inp.brand,
+        brandVoice: inp.brandVoice,
+      }));
+      return { urgentItems };
+    },
+  }), {
+    input: (ctx) => {
+      const pi = ctx.pipelineInput as { brand: string; brandVoice?: string };
+      const collectOutput = ctx.stepOutputs['collect'] as {
+        allClassifications: Array<Record<string, unknown>>;
+        urgentItems: Array<{ mention: Record<string, unknown>; classification: Record<string, unknown> }>;
+      };
+      return {
+        ...collectOutput,
+        brand: pi.brand,
+        brandVoice: pi.brandVoice,
+      };
+    },
+  })
+
+  // Step 6: Draft responses for urgent/requiring-response mentions
+  // Each item is { mention, classification, brand, brandVoice? } — all context embedded
   .mapOver('urgentItems', draftPipeline, {
     concurrency: 2,
     onItemError: 'skip',
     name: 'draft-responses',
   })
 
-  // Step 5: Generate daily digest
+  // Step 7: Generate daily digest
   .step('digest', generateDigestSkill, {
     input: (ctx) => {
       const pi = ctx.pipelineInput as { brand: string };
