@@ -56,6 +56,28 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  packages/helpers:
+    dependencies:
+      '@flomatai/core':
+        specifier: workspace:*
+        version: link:../core
+      '@flomatai/provider-anthropic':
+        specifier: workspace:*
+        version: link:../providers/anthropic
+      '@flomatai/provider-openai-compat':
+        specifier: workspace:*
+        version: link:../providers/openai-compat
+      '@flomatai/state-sqlite':
+        specifier: workspace:*
+        version: link:../state/sqlite
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.35
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
   packages/providers/anthropic:
     dependencies:
       '@anthropic-ai/sdk':
