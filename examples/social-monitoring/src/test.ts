@@ -2,22 +2,13 @@
  * Social Monitoring — test runner using MockLLMProvider + mock data.
  */
 
-import { Orchestrator, MemoryStore, createTestLLM } from '@flomatai/core';
+import { createTestOrchestrator } from '@flomatai/core';
 import { socialMonitoringPipeline } from './pipeline.js';
 
 async function runTest() {
   console.log('=== Social Monitoring — Test ===\n');
 
-  const orchestrator = new Orchestrator({
-    llm: { default: createTestLLM() },
-    state: new MemoryStore(),
-    hooks: {
-      beforeStep: (step, _input, _runId) => { process.stdout.write(`  → ${step.name} ... `); },
-      afterStep: (_step, record) => { console.log(`done (${record.durationMs}ms)`); },
-      onError: (step, err) => { console.error(`\n  ✗ ${step?.name}: ${err.message}`); },
-    },
-  });
-
+  const orchestrator = createTestOrchestrator();
   const { output, run } = await orchestrator.run(socialMonitoringPipeline, {
     brand: 'Acme Corp',
     keywords: ['acme', 'acmecorp'],

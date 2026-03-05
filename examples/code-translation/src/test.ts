@@ -2,7 +2,7 @@
  * Code Translation — test runner using MockLLMProvider.
  */
 
-import { Orchestrator, MemoryStore, createTestLLM } from '@flomatai/core';
+import { createTestOrchestrator } from '@flomatai/core';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -17,16 +17,7 @@ async function runTest() {
   console.log('=== Code Translation — Test ===\n');
 
   const outputDir = await mkdtemp(join(tmpdir(), 'flomatai-test-'));
-
-  const orchestrator = new Orchestrator({
-    llm: { default: createTestLLM() },
-    state: new MemoryStore(),
-    hooks: {
-      beforeStep: (step, _input, _runId) => { process.stdout.write(`  → ${step.name} ... `); },
-      afterStep: (_step, record) => { console.log(`done (${record.durationMs}ms)`); },
-      onError: (step, err) => { console.error(`\n  ✗ ${step?.name}: ${err.message}`); },
-    },
-  });
+  const orchestrator = createTestOrchestrator();
 
   const { output, run } = await orchestrator.run(codeTranslationPipeline, {
     sourceDir: SAMPLE_PROJECT,

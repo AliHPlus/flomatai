@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@flomatai/core": "workspace:*",
+    "@flomatai/helpers": "workspace:*",
     "@flomatai/provider-anthropic": "workspace:*",
     "@flomatai/provider-openai-compat": "workspace:*",
     "zod": "^3.23.8"

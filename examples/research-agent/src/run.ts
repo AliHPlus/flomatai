@@ -8,16 +8,10 @@
  */
 
 import { writeFile } from 'fs/promises';
-import { Orchestrator, MemoryStore, logger } from '@flomatai/core';
-import { anthropic } from '@flomatai/provider-anthropic';
-import { openCode } from '@flomatai/provider-openai-compat';
+import { Orchestrator, MemoryStore, logger, getArg } from '@flomatai/core';
+import { resolveLLMFromEnv } from '@flomatai/helpers';
 import { createResearchAgent } from './agent.js';
 import type { ResearchReport } from '../skills/synthesize-report.js';
-
-function getArg(flag: string): string | undefined {
-  const idx = process.argv.indexOf(flag);
-  return idx !== -1 ? process.argv[idx + 1] : undefined;
-}
 
 async function main() {
   const topic = getArg('--topic') ?? process.env['TOPIC'];
@@ -31,16 +25,7 @@ async function main() {
   const maxIterations = parseInt(maxIterStr, 10);
   const outputPath = getArg('--output') ?? process.env['OUTPUT'];
 
-  // Set up LLM provider
-  const useOpenCode = process.env['OPENCODE_BASE_URL'] || process.env['USE_OPENCODE'];
-  const llm = useOpenCode
-    ? openCode({ model: process.env['LLM_MODEL'] ?? 'anthropic/claude-sonnet-4-6' })
-    : anthropic({
-        model: process.env['LLM_MODEL'] ?? 'claude-3-5-sonnet-20241022',
-        temperature: 0.2,
-        maxTokens: 3000,
-      });
-
+  const llm = resolveLLMFromEnv({ temperature: 0.2, maxTokens: 3000 });
   const llmRegistry = { default: llm };
   const state = new MemoryStore();
   const agentLogger = logger.child('research-agent');
@@ -52,27 +37,17 @@ async function main() {
   const agent = createResearchAgent(maxIterations);
   const runId = `research-${Date.now()}`;
 
-  let iteration = 0;
   const ctx = agent.createContext({
     llmRegistry,
     state,
     logger: agentLogger,
     runId,
-    emit: (event, data) => {
-      if (event === 'thought' || event.startsWith('react:')) {
-        // handled by hooks below
-      }
-    },
+    emit: () => {},
   });
-
-  // Patch emit to log agent steps
-  const originalEmit = ctx.emit.bind(ctx);
-  void originalEmit; // suppress unused warning
 
   const startMs = Date.now();
 
   try {
-    // Run the agent
     const result = await agent.run({ topic, maxSources: parseInt(process.env['MAX_SOURCES'] ?? '5', 10) }, ctx);
 
     const elapsed = Date.now() - startMs;
@@ -93,7 +68,6 @@ async function main() {
     }
     console.log('────────────────────────────────────────────────────────');
 
-    // Format the report
     const report = result.output as ResearchReport;
 
     const markdown = [

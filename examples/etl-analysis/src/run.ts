@@ -16,16 +16,12 @@ import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { getArg } from '@flomatai/core';
 import { etlAnalysisPipeline } from './pipeline.js';
 import { orchestrator } from './orchestrator.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, '../data');
-
-function getArg(flag: string): string | undefined {
-  const idx = process.argv.indexOf(flag);
-  return idx !== -1 ? process.argv[idx + 1] : undefined;
-}
 
 async function main() {
   const salesCsv = getArg('--sales') ?? process.env['SALES_CSV'] ?? join(DATA_DIR, 'sales.csv');

@@ -11,13 +11,9 @@
  *   OPENCODE_BASE_URL — use local OpenCode proxy instead of direct API
  */
 
+import { getArg } from '@flomatai/core';
 import { githubPRReviewPipeline } from './pipeline.js';
 import { orchestrator } from './orchestrator.js';
-
-function getArg(flag: string): string | undefined {
-  const idx = process.argv.indexOf(flag);
-  return idx !== -1 ? process.argv[idx + 1] : undefined;
-}
 
 async function main() {
   const token = process.env['GITHUB_TOKEN'];

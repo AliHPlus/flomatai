@@ -5,7 +5,7 @@
  * instead of calling the real API.
  */
 
-import { Orchestrator, MemoryStore, createTestLLM, Pipeline, TransformSkill } from '@flomatai/core';
+import { createTestOrchestrator, Pipeline, TransformSkill } from '@flomatai/core';
 import { z } from 'zod';
 import { reviewFileSkill } from '../skills/review-file.js';
 import { postReviewSkill } from '../skills/post-review.js';
@@ -121,16 +121,7 @@ const testPipeline = Pipeline.create('github-pr-review-test')
 async function runTest() {
   console.log('=== GitHub PR Review — Test ===\n');
 
-  const orchestrator = new Orchestrator({
-    llm: { default: createTestLLM() },
-    state: new MemoryStore(),
-    hooks: {
-      beforeStep: (step, _input, _runId) => { process.stdout.write(`  → ${step.name} ... `); },
-      afterStep: (_step, record) => { console.log(`done (${record.durationMs}ms)`); },
-      onError: (step, err) => { console.error(`\n  ✗ ${step?.name}: ${err.message}`); },
-    },
-  });
-
+  const orchestrator = createTestOrchestrator();
   const { output, run } = await orchestrator.run(testPipeline, {
     owner: 'test-org',
     repo: 'test-repo',

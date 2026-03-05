@@ -4,9 +4,8 @@
  * The ReAct loop is configured to finish immediately using the mock.
  */
 
-import { Orchestrator, MemoryStore, createTestLLM, MockResponse } from '@flomatai/core';
+import { MemoryStore, createTestLLM, MockResponse, logger } from '@flomatai/core';
 import { createResearchAgent } from './agent.js';
-import { logger } from '@flomatai/core';
 
 async function runTest() {
   console.log('=== Research Agent — Test ===\n');

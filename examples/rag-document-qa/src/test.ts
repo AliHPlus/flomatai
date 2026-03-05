@@ -5,7 +5,7 @@
  * using real TF-IDF (no LLM) for ingest/retrieve, mock LLM for answer.
  */
 
-import { Orchestrator, MemoryStore, createTestLLM } from '@flomatai/core';
+import { createTestOrchestrator } from '@flomatai/core';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -18,16 +18,7 @@ const SAMPLE_DOCS = join(__dirname, '../../sample-docs');
 async function runTest() {
   console.log('=== RAG Document Q&A — Test ===\n');
 
-  const orchestrator = new Orchestrator({
-    llm: { default: createTestLLM() },
-    state: new MemoryStore(),
-    hooks: {
-      beforeStep: (step, _input, _runId) => { process.stdout.write(`  → ${step.name} ... `); },
-      afterStep: (_step, record) => { console.log(`done (${record.durationMs}ms)`); },
-      onError: (step, err) => { console.error(`\n  ✗ ${step?.name}: ${err.message}`); },
-    },
-  });
-
+  const orchestrator = createTestOrchestrator();
   const { output, run } = await orchestrator.run(ragPipeline, {
     paths: [SAMPLE_DOCS],
     query: 'What is type inference in TypeScript?',
@@ -42,7 +33,6 @@ async function runTest() {
   console.log(`  Citations:  ${result.citations.length}`);
   console.log(`  Confidence: ${result.confidence}`);
 
-  // Assertions
   if (!result.answer) throw new Error('answer is empty');
   if (typeof result.confidence !== 'string') throw new Error('confidence missing');
 

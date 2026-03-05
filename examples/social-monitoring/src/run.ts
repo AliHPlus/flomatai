@@ -15,18 +15,10 @@
 
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { getArg, hasFlag } from '@flomatai/core';
 import { socialMonitoringPipeline } from './pipeline.js';
 import { orchestrator } from './orchestrator.js';
 import type { Digest } from '../skills/generate-digest.js';
-
-function getArg(flag: string): string | undefined {
-  const idx = process.argv.indexOf(flag);
-  return idx !== -1 ? process.argv[idx + 1] : undefined;
-}
-
-function hasFlag(flag: string): boolean {
-  return process.argv.includes(flag);
-}
 
 async function main() {
   const mock = hasFlag('--mock') || process.env['MOCK'] === 'true';

@@ -12,6 +12,7 @@
  *   node dist/src/run.js --resume <run-id>
  */
 
+import { getArg } from '@flomatai/core';
 import { codeTranslationPipeline } from './pipeline.js';
 import { orchestrator } from './orchestrator.js';
 import { join } from 'path';
@@ -20,11 +21,6 @@ import { dirname } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SAMPLE_PROJECT = join(__dirname, '../sample-project');
-
-function getArg(flag: string): string | undefined {
-  const idx = process.argv.indexOf(flag);
-  return idx !== -1 ? process.argv[idx + 1] : undefined;
-}
 
 async function main() {
   const resumeId = getArg('--resume') ?? process.env['RESUME'];

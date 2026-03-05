@@ -2,7 +2,7 @@
  * ETL Analysis — test runner using MockLLMProvider + real Python bridge.
  */
 
-import { Orchestrator, MemoryStore, createTestLLM } from '@flomatai/core';
+import { createTestOrchestrator } from '@flomatai/core';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -14,16 +14,7 @@ const DATA_DIR = join(__dirname, '../../data');
 async function runTest() {
   console.log('=== ETL Analysis — Test ===\n');
 
-  const orchestrator = new Orchestrator({
-    llm: { default: createTestLLM() },
-    state: new MemoryStore(),
-    hooks: {
-      beforeStep: (step, _input, _runId) => { process.stdout.write(`  → ${step.name} ... `); },
-      afterStep: (_step, record) => { console.log(`done (${record.durationMs}ms)`); },
-      onError: (step, err) => { console.error(`\n  ✗ ${step?.name}: ${err.message}`); },
-    },
-  });
-
+  const orchestrator = createTestOrchestrator();
   const { output, run } = await orchestrator.run(etlAnalysisPipeline, {
     salesCsv: join(DATA_DIR, 'sales.csv'),
     usersJson: join(DATA_DIR, 'users.json'),

@@ -9,13 +9,9 @@
 
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { getArg } from '@flomatai/core';
 import { contentGenerationPipeline } from './pipeline.js';
 import { orchestrator } from './orchestrator.js';
-
-function getArg(flag: string): string | undefined {
-  const idx = process.argv.indexOf(flag);
-  return idx !== -1 ? process.argv[idx + 1] : undefined;
-}
 
 async function main() {
   const topic = getArg('--topic') ?? process.env['TOPIC'];
