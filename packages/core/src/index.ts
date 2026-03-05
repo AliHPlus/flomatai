@@ -64,6 +64,17 @@ export {
   type StepKind,
 } from './pipeline.js';
 
+// ── Pipeline Registry ─────────────────────────────────────────────────────────
+export {
+  PipelineRegistry,
+  loadPipeline,
+  createRegistryFromConfig,
+  type PipelineSource,
+  type RegisteredPipeline,
+  type PipelinePackageMeta,
+  type PipelinePackageExports,
+} from './pipeline-registry.js';
+
 // ── State ─────────────────────────────────────────────────────────────────────
 export type { StateStore, RunFilter } from './state/types.js';
 export { MemoryStore } from './state/memory-store.js';
