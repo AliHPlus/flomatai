@@ -1,0 +1,22 @@
+{
+  "name": "research-agent-example",
+  "version": "0.1.0",
+  "description": "Autonomous research agent — ReAct strategy, DuckDuckGo HTML scrape (no API key)",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/run.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flomatai/core": "workspace:*",
+    "@flomatai/provider-anthropic": "workspace:*",
+    "@flomatai/provider-openai-compat": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^20.0.0"
+  }
+}
