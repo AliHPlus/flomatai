@@ -11,7 +11,8 @@ import { dirname, join } from 'path';
 import { PythonSkill } from '@flomatai/bridge-python';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SCRIPT_PATH = join(__dirname, '../python/analyze.py');
+// TypeScript compiles to dist/skills/, so go up two levels to reach the project root
+const SCRIPT_PATH = join(__dirname, '../../python/analyze.py');
 
 export const analyzePythonSkill = PythonSkill.create({
   name: 'analyze-python',

@@ -11,7 +11,7 @@ import { TransformSkill } from '@flomatai/core';
 export const mergeDataSkill = TransformSkill.create({
   name: 'merge-data',
   description: 'Merges sales, user, and metrics data into a unified analysis dataset',
-  inputSchema: z.record(z.unknown()),
+  inputSchema: z.array(z.record(z.unknown())),
   outputSchema: z.object({
     sales: z.array(z.record(z.unknown())),
     users: z.array(z.record(z.unknown())),
