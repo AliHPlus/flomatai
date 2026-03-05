@@ -1,0 +1,23 @@
+{
+  "name": "social-monitoring-example",
+  "version": "0.1.0",
+  "description": "Social media monitoring pipeline — fetch RSS/mock sources, classify sentiment, draft responses, daily digest",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/run.js",
+    "mock": "node dist/src/run.js --mock",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flomatai/core": "workspace:*",
+    "@flomatai/provider-anthropic": "workspace:*",
+    "@flomatai/provider-openai-compat": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^20.0.0"
+  }
+}
