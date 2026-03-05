@@ -97,10 +97,17 @@ export {
   type RunOptions,
 } from './orchestrator.js';
 
+// ── Orchestrator helpers ──────────────────────────────────────────────────────
+export { createConsoleHooks } from './orchestrator-helpers.js';
+
+// ── CLI utilities ─────────────────────────────────────────────────────────────
+export { getArg, hasFlag, readTextInput } from './cli-utils.js';
+
 // ── Testing / Mock ────────────────────────────────────────────────────────────
 export {
   MockLLMProvider,
   createTestLLM,
   createMockLLMRegistry,
+  createTestOrchestrator,
   type MockResponse,
 } from './mock-llm.js';

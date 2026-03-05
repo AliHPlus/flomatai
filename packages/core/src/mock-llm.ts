@@ -15,6 +15,8 @@
 
 import type { LLMProvider, LLMRegistry } from './llm-provider.js';
 import type { Message, LLMOptions, LLMResponse, LLMChunk } from './types.js';
+import { Orchestrator } from './orchestrator.js';
+import { MemoryStore } from './state/memory-store.js';
 
 export interface MockResponse {
   /** Regex or string to match against the last user message content. */
@@ -389,4 +391,43 @@ export function createMockLLMRegistry(overrides: MockResponse[] = []): Record<st
     research: mock,
     planning: mock,
   };
+}
+
+/**
+ * Create a ready-to-use Orchestrator wired with MockLLMProvider + MemoryStore
+ * and the standard console step-logging hooks.
+ *
+ * This eliminates the ~10-line boilerplate repeated in every example test.ts:
+ *
+ *   // Before:
+ *   const orchestrator = new Orchestrator({
+ *     llm: { default: createTestLLM(), planning: createTestLLM() },
+ *     state: new MemoryStore(),
+ *     hooks: { beforeStep: ..., afterStep: ..., onError: ... },
+ *   });
+ *
+ *   // After:
+ *   const orchestrator = createTestOrchestrator(['planning']);
+ *
+ * @param extraLLMKeys  Additional LLM registry keys to populate with the same mock
+ *                      (beyond the always-present 'default'). E.g. ['planning', 'research'].
+ * @param overrides     Optional MockResponse patterns forwarded to createTestLLM().
+ */
+export function createTestOrchestrator(
+  extraLLMKeys: string[] = [],
+  overrides: MockResponse[] = [],
+): Orchestrator {
+  const mock = createTestLLM(overrides);
+  const llm: LLMRegistry = { default: mock };
+  for (const key of extraLLMKeys) llm[key] = mock;
+
+  return new Orchestrator({
+    llm,
+    state: new MemoryStore(),
+    hooks: {
+      beforeStep: (step) => { process.stdout.write(`  → ${step.name} ... `); },
+      afterStep: (_step, record) => { console.log(`done (${record.durationMs}ms)`); },
+      onError: (step, err) => { console.error(`\n  ✗ ${step?.name}: ${err.message}`); },
+    },
+  });
 }
