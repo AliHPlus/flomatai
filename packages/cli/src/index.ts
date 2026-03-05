@@ -14,6 +14,7 @@ import { Orchestrator, MemoryStore } from '@flomatai/core';
 import { registerRunCommand } from './commands/run.js';
 import { registerInspectCommand } from './commands/inspect.js';
 import { registerListCommand } from './commands/list.js';
+import { registerPipelineCommands } from './commands/pipeline.js';
 
 const VERSION = '0.1.0';
 
@@ -64,6 +65,7 @@ const lazyGet = () => {
 registerRunCommand(program, lazyGet);
 registerInspectCommand(program, lazyGet);
 registerListCommand(program, lazyGet);
+registerPipelineCommands(program);
 
 // Shorthand: flomatai resume <runId> <pipeline>
 program
