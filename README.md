@@ -365,10 +365,81 @@ flomatai resume <run-id> ./pipelines/my-pipeline.js
 
 ## Examples
 
-### Verlivo Planning Pipeline
-[`examples/verlivo-planning`](./examples/verlivo-planning) — a complete port of the 22-node n8n Verlivo workflow to flomatai.
+All examples are independent packages under `examples/`. Each has its own `package.json`, `README.md`, `.env.example`, and runs with `pnpm build && node dist/src/run.js`.
 
-**What it does:** Takes software documentation → extracts all microservices → for each service runs 7 LLM planning steps → outputs complete service plan documents.
+| Example | Description | Key Features |
+|---------|-------------|--------------|
+| [`verlivo-planning`](./examples/verlivo-planning) | Port of a 22-node n8n workflow | `mapOver`, sequential LLM chain, SQLite state |
+| [`github-pr-review`](./examples/github-pr-review) | Automated GitHub PR code review | GitHub API, `mapOver` concurrency=3, per-file LLM review |
+| [`rag-document-qa`](./examples/rag-document-qa) | Document Q&A with citations | In-memory TF-IDF, no embedding API, grounded answers |
+| [`content-generation`](./examples/content-generation) | 4 formats from one topic | `parallel` step, blog + Twitter + LinkedIn + TL;DR |
+| [`etl-analysis`](./examples/etl-analysis) | ETL + Python analysis + narrative | 3 parallel extracts, Python bridge, LLM report |
+| [`research-agent`](./examples/research-agent) | Autonomous web research agent | ReAct strategy, DuckDuckGo (no API key), reflection |
+| [`code-translation`](./examples/code-translation) | Codebase language migration | SQLite checkpointing, resume, concurrency=3 |
+| [`social-monitoring`](./examples/social-monitoring) | Brand mention monitoring digest | RSS + `--mock` mode, sentiment + urgency classification |
+
+### Quick start — GitHub PR Review
+
+```bash
+cd examples/github-pr-review
+pnpm install && pnpm build
+GITHUB_TOKEN=ghp_xxx ANTHROPIC_API_KEY=sk-ant-xxx \
+  node dist/src/run.js --owner myorg --repo myrepo --pr 42
+```
+
+### Quick start — RAG Document Q&A
+
+```bash
+cd examples/rag-document-qa
+pnpm install && pnpm build
+ANTHROPIC_API_KEY=sk-ant-xxx \
+  node dist/src/run.js --query "What is type inference in TypeScript?"
+```
+
+### Quick start — Content Generation
+
+```bash
+cd examples/content-generation
+pnpm install && pnpm build
+ANTHROPIC_API_KEY=sk-ant-xxx \
+  node dist/src/run.js --topic "The future of AI automation" --translate-to Spanish
+```
+
+### Quick start — Social Monitoring (mock mode, no source API key)
+
+```bash
+cd examples/social-monitoring
+pnpm install && pnpm build
+ANTHROPIC_API_KEY=sk-ant-xxx \
+  node dist/src/run.js --mock --brand "Acme Corp"
+```
+
+### Quick start — Research Agent (DuckDuckGo, no search API key)
+
+```bash
+cd examples/research-agent
+pnpm install && pnpm build
+ANTHROPIC_API_KEY=sk-ant-xxx \
+  node dist/src/run.js --topic "Current state of AI code generation"
+```
+
+### Quick start — Code Translation
+
+```bash
+cd examples/code-translation
+pnpm install && pnpm build
+ANTHROPIC_API_KEY=sk-ant-xxx \
+  node dist/src/run.js --source ./sample-project --from Python --to TypeScript --output ./out
+```
+
+### Quick start — Verlivo Planning (n8n port)
+
+```bash
+cd examples/verlivo-planning
+pnpm install
+pnpm build
+ANTHROPIC_API_KEY=sk-... node dist/src/run.js --file docs.md
+```
 
 **n8n → flomatai mapping:**
 | n8n Component | flomatai Equivalent |
@@ -380,13 +451,6 @@ flomatai resume <run-id> ./pipelines/my-pipeline.js
 | OpenCode LLM node | `openCode({})` provider |
 | Save 1..N Code nodes | Eliminated — outputs flow through pipeline context |
 | Workflow settings | `Orchestrator` config |
-
-```bash
-cd examples/verlivo-planning
-pnpm install
-pnpm build
-ANTHROPIC_API_KEY=sk-... node dist/src/run.js --file docs.md
-```
 
 ---
 
