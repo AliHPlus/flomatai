@@ -4,5 +4,6 @@ packages:
   - "packages/state/*"
   - "packages/helpers"
   - "packages/bridge-python"
+  - "packages/mcp-client"
   - "packages/cli"
   - "examples/*"

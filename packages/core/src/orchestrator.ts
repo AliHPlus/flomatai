@@ -15,6 +15,7 @@
 import { randomUUID } from 'crypto';
 import type { LLMRegistry } from './llm-provider.js';
 import { resolveLLM } from './llm-provider.js';
+import type { MCPClientLike } from './skill.js';
 import type { StateStore } from './state/types.js';
 import { MemoryStore } from './state/memory-store.js';
 import type { Logger } from './logger.js';
@@ -35,6 +36,21 @@ export interface OrchestratorConfig {
    * @example { default: anthropic({ model: 'claude-3-5-sonnet' }) }
    */
   llm: LLMRegistry;
+  /**
+   * MCP client registry. Named MCP clients that skills and agents can access
+   * via SkillContext.getMCPClient(key).
+   *
+   * @example
+   * ```ts
+   * import { MCPClient } from '@flomatai/mcp-client';
+   * {
+   *   mcp: {
+   *     filesystem: new MCPClient({ command: 'npx', args: ['-y', '@modelcontextprotocol/server-filesystem', '/tmp'] })
+   *   }
+   * }
+   * ```
+   */
+  mcp?: Record<string, MCPClientLike>;
   /**
    * State store for persistence, caching, and run history.
    * @default MemoryStore
@@ -92,6 +108,7 @@ export interface RunOptions {
 
 export class Orchestrator {
   private readonly llmRegistry: LLMRegistry;
+  private readonly mcpRegistry: Record<string, MCPClientLike>;
   private readonly state: StateStore;
   private readonly log: Logger;
   private readonly hooks: OrchestratorHooks;
@@ -101,6 +118,7 @@ export class Orchestrator {
 
   constructor(config: OrchestratorConfig) {
     this.llmRegistry = config.llm;
+    this.mcpRegistry = config.mcp ?? {};
     this.state = config.state ?? new MemoryStore();
     this.log = config.logger ?? defaultLogger;
     this.hooks = config.hooks ?? {};
@@ -166,6 +184,7 @@ export class Orchestrator {
     }
 
     // Build skill context factory
+    const mcpRegistry = this.mcpRegistry;
     const makeSkillCtx = (): SkillContext => ({
       llm: resolveLLM(this.llmRegistry, options.llm ?? 'default'),
       logger: this.log,
@@ -175,6 +194,18 @@ export class Orchestrator {
       abortSignal: abortController.signal,
       runId,
       getLLM: (key: string) => resolveLLM(this.llmRegistry, key),
+      getMCPClient: Object.keys(mcpRegistry).length > 0
+        ? (key: string) => {
+            const client = mcpRegistry[key];
+            if (!client) {
+              throw new Error(
+                `MCP client "${key}" not found in registry. ` +
+                `Available: ${Object.keys(mcpRegistry).join(', ')}`,
+              );
+            }
+            return client;
+          }
+        : undefined,
     });
 
     // Execute steps
@@ -481,8 +512,11 @@ export class Orchestrator {
     return this.state;
   }
 
-  /** Get the LLM registry. */
   get llm(): LLMRegistry {
     return this.llmRegistry;
+  }
+
+  get mcp(): Record<string, MCPClientLike> {
+    return this.mcpRegistry;
   }
 }

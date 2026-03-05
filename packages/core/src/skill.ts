@@ -14,6 +14,33 @@ import type { LLMProvider } from './llm-provider.js';
 import type { StateStore } from './state/types.js';
 import type { Logger } from './logger.js';
 
+// ── MCP Client (minimal interface, keeps core provider-agnostic) ──────────────
+
+/**
+ * Minimal interface that any MCP client must satisfy.
+ * Defined in core so OrchestratorConfig and SkillContext can reference it
+ * without hard-depending on @flomatai/mcp-client.
+ *
+ * @flomatai/mcp-client's MCPClient class implements this interface.
+ */
+export interface MCPClientLike {
+  /**
+   * List all tools exposed by the connected MCP server.
+   * Returns an array of tool descriptors (name, description, inputSchema).
+   */
+  listTools(): Promise<Array<{
+    name: string;
+    description: string;
+    inputSchema: Record<string, unknown>;
+  }>>;
+  /**
+   * Call a named tool on the connected MCP server.
+   * @param name  Tool name as returned by listTools().
+   * @param args  Arguments matching the tool's inputSchema.
+   */
+  callTool(name: string, args: Record<string, unknown>): Promise<unknown>;
+}
+
 // ── Skill Metadata ────────────────────────────────────────────────────────────
 
 export interface SkillMeta {
@@ -65,6 +92,11 @@ export interface SkillContext {
   runId: string;
   /** LLM registry — retrieve a named LLM by key. */
   getLLM: (key: string) => LLMProvider;
+  /**
+   * MCP client registry — retrieve a named MCP client by key.
+   * Only present when the Orchestrator is configured with an `mcp` registry.
+   */
+  getMCPClient?: (key: string) => MCPClientLike;
 }
 
 // ── Skill Interface ───────────────────────────────────────────────────────────

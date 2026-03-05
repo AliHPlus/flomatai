@@ -40,7 +40,7 @@ export type { LLMProvider, LLMRegistry } from './llm-provider.js';
 export { resolveLLM, withRetry, withTimeout } from './llm-provider.js';
 
 // ── Skill ─────────────────────────────────────────────────────────────────────
-export type { Skill, SkillMeta, SkillContext, SkillResult } from './skill.js';
+export type { Skill, SkillMeta, SkillContext, SkillResult, MCPClientLike } from './skill.js';
 
 // ── Skill Builders ────────────────────────────────────────────────────────────
 export { LLMSkill, createLLMSkill, type LLMSkillConfig } from './skills/llm-skill.js';
