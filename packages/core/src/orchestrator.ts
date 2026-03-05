@@ -132,6 +132,11 @@ export class Orchestrator {
     const emit = (event: string, data: unknown): void => {
       events.push({ event, data });
       this.log.debug(`event:${event}`, data);
+      // Accumulate token usage from LLM skill responses
+      if (event === 'llm:response') {
+        const d = data as { tokens?: number };
+        if (typeof d.tokens === 'number') totalTokens += d.tokens;
+      }
     };
 
     const run: PipelineRun = {
@@ -175,7 +180,7 @@ export class Orchestrator {
     // Execute steps
     const stepOutputs: Record<string, unknown> = {};
     let previousOutput: unknown = input;
-    let totalTokens = 0;
+    let totalTokens = 0;  // NOTE: also incremented by emit('llm:response') above
 
     try {
       for (const step of pipeline.steps) {

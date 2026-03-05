@@ -96,3 +96,11 @@ export {
   type OrchestratorHooks,
   type RunOptions,
 } from './orchestrator.js';
+
+// ── Testing / Mock ────────────────────────────────────────────────────────────
+export {
+  MockLLMProvider,
+  createTestLLM,
+  createMockLLMRegistry,
+  type MockResponse,
+} from './mock-llm.js';
