@@ -1,0 +1,23 @@
+{
+  "name": "code-translation-example",
+  "version": "0.1.0",
+  "description": "Code translation pipeline — discover files, translate with concurrency=3, SQLite checkpointing for resume",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/run.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flomatai/core": "workspace:*",
+    "@flomatai/provider-anthropic": "workspace:*",
+    "@flomatai/provider-openai-compat": "workspace:*",
+    "@flomatai/state-sqlite": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^20.0.0"
+  }
+}
