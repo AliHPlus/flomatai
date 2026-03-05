@@ -281,6 +281,8 @@ node dist/src/test.js   # MockMCPClient + MockLLMProvider, no keys needed
 
 ## Installation
 
+### As a library (in your project)
+
 ```bash
 pnpm add @flomatai/core
 
@@ -295,6 +297,45 @@ pnpm add @flomatai/bridge-python   # Python skills
 pnpm add @flomatai/state-sqlite    # SQLite persistence
 pnpm add @flomatai/helpers         # Environment utilities
 pnpm add @flomatai/cli             # CLI tooling
+```
+
+### As a CLI (global)
+
+```bash
+# Install globally
+npm install -g @flomatai/cli
+
+# Or using pnpm
+pnpm add -g @flomatai/cli
+
+# Verify installation
+flomatai --version
+```
+
+## CLI Usage
+
+```bash
+# Run a pipeline from a file
+flomatai run ./path/to/pipeline.ts --input '{"key": "value"}'
+
+# Run a pipeline from the registry
+flomatai run my-pipeline --input '{"key": "value"}'
+
+# List recent pipeline runs
+flomatai list
+
+# Inspect a specific run
+flomatai inspect <run-id>
+
+# Resume a failed run
+flomatai resume <run-id> ./path/to/pipeline.ts
+
+# Manage pipeline registry
+flomatai pipeline list
+flomatai pipeline install ./path/to/pipeline
+flomatai pipeline install @org/their-pipeline
+flomatai pipeline inspect <name>
+flomatai pipeline uninstall <name>
 ```
 
 ---
