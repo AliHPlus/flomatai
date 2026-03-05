@@ -22,7 +22,8 @@ import { ragPipeline } from './pipeline.js';
 import { orchestrator } from './orchestrator.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SAMPLE_DOCS = join(__dirname, '../sample-docs');
+// __dirname is dist/src/ after compilation; go up two levels to reach package root
+const SAMPLE_DOCS = join(__dirname, '../../sample-docs');
 
 function getArg(flag: string): string | undefined {
   const idx = process.argv.indexOf(flag);
