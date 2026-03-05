@@ -1,0 +1,17 @@
+[
+  { "id": "U001", "name": "Alice Chen", "plan": "premium", "signup_date": "2023-06-15", "region": "North", "active": true, "sessions_last_30d": 42, "spend_lifetime": 1847.50 },
+  { "id": "U002", "name": "Bob Martinez", "plan": "basic", "signup_date": "2023-08-22", "region": "South", "active": true, "sessions_last_30d": 18, "spend_lifetime": 299.70 },
+  { "id": "U003", "name": "Carol Johnson", "plan": "premium", "signup_date": "2023-07-01", "region": "East", "active": true, "sessions_last_30d": 67, "spend_lifetime": 3249.85 },
+  { "id": "U004", "name": "David Lee", "plan": "basic", "signup_date": "2023-09-10", "region": "West", "active": false, "sessions_last_30d": 0, "spend_lifetime": 89.91 },
+  { "id": "U005", "name": "Emma Wilson", "plan": "enterprise", "signup_date": "2023-05-20", "region": "North", "active": true, "sessions_last_30d": 95, "spend_lifetime": 12480.00 },
+  { "id": "U006", "name": "Frank Brown", "plan": "basic", "signup_date": "2023-11-05", "region": "South", "active": true, "sessions_last_30d": 12, "spend_lifetime": 149.85 },
+  { "id": "U007", "name": "Grace Kim", "plan": "premium", "signup_date": "2023-10-18", "region": "East", "active": true, "sessions_last_30d": 38, "spend_lifetime": 1499.94 },
+  { "id": "U008", "name": "Henry Zhang", "plan": "enterprise", "signup_date": "2023-04-12", "region": "West", "active": true, "sessions_last_30d": 88, "spend_lifetime": 18750.00 },
+  { "id": "U009", "name": "Isabel Garcia", "plan": "basic", "signup_date": "2024-01-03", "region": "North", "active": true, "sessions_last_30d": 8, "spend_lifetime": 39.96 },
+  { "id": "U010", "name": "Jack Thompson", "plan": "premium", "signup_date": "2023-12-01", "region": "South", "active": true, "sessions_last_30d": 55, "spend_lifetime": 2249.91 },
+  { "id": "U011", "name": "Karen White", "plan": "basic", "signup_date": "2024-01-15", "region": "East", "active": false, "sessions_last_30d": 2, "spend_lifetime": 19.98 },
+  { "id": "U012", "name": "Liam Davis", "plan": "enterprise", "signup_date": "2023-06-30", "region": "West", "active": true, "sessions_last_30d": 112, "spend_lifetime": 24600.00 },
+  { "id": "U013", "name": "Mia Anderson", "plan": "premium", "signup_date": "2023-09-25", "region": "North", "active": true, "sessions_last_30d": 29, "spend_lifetime": 999.96 },
+  { "id": "U014", "name": "Noah Taylor", "plan": "basic", "signup_date": "2024-02-01", "region": "South", "active": true, "sessions_last_30d": 5, "spend_lifetime": 9.99 },
+  { "id": "U015", "name": "Olivia Harris", "plan": "premium", "signup_date": "2023-07-20", "region": "East", "active": true, "sessions_last_30d": 73, "spend_lifetime": 4499.82 }
+]

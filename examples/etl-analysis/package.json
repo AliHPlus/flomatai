@@ -1,0 +1,23 @@
+{
+  "name": "etl-analysis-example",
+  "version": "0.1.0",
+  "description": "ETL + Python pandas analysis pipeline — extract from 3 sources, merge, analyze, LLM narrative",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/run.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flomatai/core": "workspace:*",
+    "@flomatai/provider-anthropic": "workspace:*",
+    "@flomatai/provider-openai-compat": "workspace:*",
+    "@flomatai/bridge-python": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^20.0.0"
+  }
+}

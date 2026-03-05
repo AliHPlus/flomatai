@@ -1,0 +1,32 @@
+{
+  "period": "Q1 2024",
+  "generated_at": "2024-04-01T00:00:00Z",
+  "api_calls": {
+    "total": 847291,
+    "by_endpoint": {
+      "/api/products": 312045,
+      "/api/orders": 284716,
+      "/api/users": 145230,
+      "/api/reports": 105300
+    },
+    "error_rate": 0.0023,
+    "avg_latency_ms": 87
+  },
+  "performance": {
+    "p50_latency_ms": 45,
+    "p95_latency_ms": 210,
+    "p99_latency_ms": 890,
+    "uptime_percent": 99.97,
+    "deployments": 12,
+    "incidents": 1
+  },
+  "growth": {
+    "new_users_jan": 342,
+    "new_users_feb": 418,
+    "new_users_mar": 531,
+    "churn_rate_percent": 2.4,
+    "mrr_jan": 48320,
+    "mrr_feb": 52180,
+    "mrr_mar": 59460
+  }
+}
