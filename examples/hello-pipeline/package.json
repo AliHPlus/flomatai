@@ -1,0 +1,31 @@
+{
+  "name": "hello-pipeline-example",
+  "version": "0.1.0",
+  "description": "Example distributable pipeline — demonstrates the FlomatAI pipeline package convention",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "main": "./dist/src/pipeline.js",
+  "types": "./dist/src/pipeline.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/src/pipeline.js",
+      "types": "./dist/src/pipeline.d.ts"
+    }
+  },
+  "flomatai": {
+    "pipeline": "./src/pipeline.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@flomatai/core": "workspace:*",
+    "@flomatai/helpers": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^20.0.0"
+  }
+}
