@@ -11,6 +11,7 @@
 import type { LLMProvider } from '@flomatai/core';
 import { anthropic } from '@flomatai/provider-anthropic';
 import { openCode } from '@flomatai/provider-openai-compat';
+import { openCodeServer } from '@flomatai/provider-opencode-server';
 
 // ── LLM resolution ─────────────────────────────────────────────────────────────
 
@@ -82,5 +83,56 @@ export function resolveLLMFromEnv(options: LLMFromEnvOptions = {}): LLMProvider 
     model: model ?? 'claude-3-5-sonnet-20241022',
     temperature: options.temperature,
     maxTokens: options.maxTokens,
+  });
+}
+
+// ── OpenCode server resolution ────────────────────────────────────────────────
+
+export interface OpenCodeServerOptions {
+  /**
+   * opencode provider ID (e.g. 'anthropic', 'openai').
+   * Must be a provider connected in the running opencode server.
+   * @default 'anthropic'
+   */
+  providerID?: string;
+
+  /**
+   * Model ID within the provider.
+   * Falls back to LLM_MODEL env var, then 'claude-sonnet-4-6'.
+   * @default 'claude-sonnet-4-6'
+   */
+  modelID?: string;
+}
+
+/**
+ * Resolve an LLM provider that talks to a running `opencode serve` instance.
+ *
+ * Connection is configured via environment variables:
+ *   OPENCODE_SERVER_URL       base URL (default: http://localhost:4096)
+ *   OPENCODE_SERVER_PASSWORD  HTTP basic auth password (if set on the server)
+ *   LLM_MODEL                 model ID override
+ *
+ * @example Start the server then run a pipeline:
+ * ```bash
+ * # Terminal 1
+ * ANTHROPIC_API_KEY=sk-... opencode serve --port 4096
+ *
+ * # Terminal 2
+ * OPENCODE_SERVER_URL=http://localhost:4096 node dist/src/run.js
+ * ```
+ *
+ * @example Explicit model:
+ * ```ts
+ * import { resolveOpenCodeServer } from '@flomatai/helpers';
+ *
+ * const llm = resolveOpenCodeServer({ modelID: 'claude-sonnet-4-6' });
+ * ```
+ */
+export function resolveOpenCodeServer(
+  options: OpenCodeServerOptions = {},
+): LLMProvider {
+  return openCodeServer({
+    providerID: options.providerID ?? 'anthropic',
+    modelID: options.modelID ?? process.env['LLM_MODEL'] ?? 'claude-sonnet-4-6',
   });
 }
