@@ -180,7 +180,7 @@ export class SQLiteStore implements StateStore {
   async saveCheckpoint(runId: string, stepName: string, data: unknown): Promise<void> {
     this.conn
       .prepare(
-        'INSERT OR REPLACE INTO checkpoints (run_id, step_name, data, saved_at) VALUES (?, ?, ?, datetime("now"))',
+        "INSERT OR REPLACE INTO checkpoints (run_id, step_name, data, saved_at) VALUES (?, ?, ?, datetime('now'))",
       )
       .run(runId, stepName, JSON.stringify(data));
   }
