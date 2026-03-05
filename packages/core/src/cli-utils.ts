@@ -64,8 +64,12 @@ export async function readTextInput(options: {
   if (!process.stdin.isTTY) {
     const chunks: Buffer[] = [];
     for await (const chunk of process.stdin) chunks.push(chunk as Buffer);
-    console.log(`Reading ${label} from stdin`);
-    return Buffer.concat(chunks).toString('utf-8');
+    const stdinText = Buffer.concat(chunks).toString('utf-8').trim();
+    if (stdinText) {
+      console.log(`Reading ${label} from stdin`);
+      return stdinText;
+    }
+    // stdin was connected but empty — fall through to demo
   }
 
   console.log(`Using demo ${label} (pass --file <path> for real ${label})`);
