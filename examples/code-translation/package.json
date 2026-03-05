@@ -2,7 +2,7 @@
   "name": "code-translation-example",
   "version": "0.1.0",
   "description": "Code translation pipeline — discover files, translate with concurrency=3, SQLite checkpointing for resume",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",

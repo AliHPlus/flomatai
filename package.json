@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "A code-first AI automation framework built on Skills and Agents",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "build": "pnpm -r build",
     "clean": "pnpm -r clean",

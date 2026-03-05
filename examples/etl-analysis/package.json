@@ -2,7 +2,7 @@
   "name": "etl-analysis-example",
   "version": "0.1.0",
   "description": "ETL + Python pandas analysis pipeline — extract from 3 sources, merge, analyze, LLM narrative",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",

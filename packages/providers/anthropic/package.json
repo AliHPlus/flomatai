@@ -2,7 +2,7 @@
   "name": "@flomatai/provider-anthropic",
   "version": "0.1.0",
   "description": "Anthropic Claude provider for flomatai",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

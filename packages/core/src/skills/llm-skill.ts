@@ -1,7 +1,7 @@
 /**
  * LLMSkill — builds a Skill that calls an LLM with a prompt template.
  *
- * This is the primary replacement for n8n's `chainLlm` node.
+ * The primary skill type for LLM-backed operations.
  */
 
 import { z, type ZodSchema } from 'zod';

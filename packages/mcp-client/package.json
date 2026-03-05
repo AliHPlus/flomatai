@@ -2,7 +2,7 @@
   "name": "@flomatai/mcp-client",
   "version": "0.1.0",
   "description": "MCP (Model Context Protocol) client for flomatai — connect to MCP servers and use their tools as flomatai Skills",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,19 +1,22 @@
 {
-  "name": "research-agent-example",
+  "name": "mcp-demo-example",
   "version": "0.1.0",
-  "description": "Autonomous research agent — ReAct strategy, DuckDuckGo HTML scrape (no API key)",
+  "description": "MCP demo — ReAct agent using @modelcontextprotocol/server-filesystem via @flomatai/mcp-client",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/run.js",
+    "test": "node dist/src/test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@flomatai/core": "workspace:*",
     "@flomatai/helpers": "workspace:*",
+    "@flomatai/mcp-client": "workspace:*",
     "@flomatai/provider-anthropic": "workspace:*",
     "@flomatai/provider-openai-compat": "workspace:*",
+    "@modelcontextprotocol/server-filesystem": "^0.6.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {

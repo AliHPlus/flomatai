@@ -2,7 +2,7 @@
   "name": "@flomatai/cli",
   "version": "0.1.0",
   "description": "CLI for flomatai — run pipelines, inspect runs, resume from checkpoints",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "bin": {
     "flomatai": "./dist/index.js"

@@ -1,7 +1,7 @@
 /**
  * TransformSkill — a pure data transformation skill (no LLM).
  *
- * Replaces n8n Code nodes.
+ * Pure data transformation skill.
  */
 
 import type { ZodSchema } from 'zod';

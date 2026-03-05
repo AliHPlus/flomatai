@@ -2,7 +2,7 @@
   "name": "@flomatai/helpers",
   "version": "0.1.0",
   "description": "Shared helpers for flomatai examples: LLM resolution from env vars, SQLite orchestrator factory",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
