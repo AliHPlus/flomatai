@@ -49,7 +49,20 @@ export function registerInspectCommand(program: Command, _getOrchestrator: () =>
 
       for (const { store } of stores) {
         try {
-          const found = await store.getRun(runId) as RunRecord | null;
+          // Exact match first
+          let found = await store.getRun(runId) as RunRecord | null;
+          // Prefix match fallback (handles truncated IDs from list output)
+          if (!found) {
+            const all = await store.listRuns({ limit: 200 }) as RunRecord[];
+            const matches = all.filter((r) => r.id.startsWith(runId));
+            if (matches.length === 1) {
+              found = await store.getRun(matches[0]!.id) as RunRecord | null;
+            } else if (matches.length > 1) {
+              console.error(`[flomatai] Ambiguous prefix '${runId}' matches ${matches.length} runs:`);
+              matches.forEach((r) => console.error(`  ${r.id}`));
+              process.exit(1);
+            }
+          }
           if (found) { run = found; break; }
         } finally {
           await store.close();

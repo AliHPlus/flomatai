@@ -69,18 +69,20 @@ export function registerListCommand(program: Command, _getOrchestrator: () => un
         completed: '✓', failed: '✗', running: '⟳', pending: '○', cancelled: '⊘',
       };
 
+      // Use full ID width so sub-run IDs (which include :plan-all-services[N]) are not truncated
+      const idColWidth = Math.max(36, ...allRuns.map((r) => r.id.length));
       const showDb = stores.length > 1 || !dbPath;
       const dbColWidth = showDb ? 28 : 0;
       const dbHeader = showDb ? ` ${pad('DATABASE', dbColWidth - 1)}` : '';
 
-      console.log(`\n${pad('STAT', 4)} ${pad('RUN ID', 38)} ${pad('PIPELINE', 30)} ${pad('STARTED', 24)} TOKENS${dbHeader}`);
-      console.log('─'.repeat(showDb ? 110 + dbColWidth : 110));
+      console.log(`\n${pad('STAT', 4)} ${'RUN ID'.padEnd(idColWidth)} ${pad('PIPELINE', 30)} ${pad('STARTED', 24)} TOKENS${dbHeader}`);
+      console.log('─'.repeat(4 + 1 + idColWidth + 1 + 30 + 1 + 24 + 1 + 6 + (showDb ? 1 + dbColWidth : 0)));
 
       for (const run of allRuns) {
         const emoji = statusEmoji[run.status] ?? '?';
         const dbSuffix = showDb ? ` ${pad(run._db.replace(process.cwd() + '/', ''), dbColWidth)}` : '';
         console.log(
-          `${emoji}    ${pad(run.id, 38)} ${pad(run.pipelineName, 30)} ${pad(run.startedAt, 24)} ${String(run.tokensUsed).padEnd(6)}${dbSuffix}`,
+          `${emoji}    ${run.id.padEnd(idColWidth)} ${pad(run.pipelineName, 30)} ${pad(run.startedAt, 24)} ${String(run.tokensUsed).padEnd(6)}${dbSuffix}`,
         );
       }
 
