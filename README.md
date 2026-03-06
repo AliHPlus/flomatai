@@ -360,11 +360,16 @@ flomatai inspect <run-id> --db .flomatai/verlivo.db
 ```
 
 **Auto-detection:** `list`, `inspect`, and `watch` automatically find SQLite databases in:
-- `.flomatai/verlivo.db`
-- `.flomatai/verlivo-impl.db`
-- `.flomatai/state.db`
+- `.flomatai/*.db` in the current directory
+- `workflows/[name]/.flomatai/*.db` across all workflow subdirectories
 
-**Local workflows:** `flomatai workflow <name>` runs a workflow from the `workflows/` directory. The workflow must have a `dist/src/run.js` script and can optionally have a `.env` file in the parent directory.
+When multiple databases are found, `list` merges and sorts all results by start time.
+
+**Local workflows:** `flomatai workflow <name>` runs a workflow from the `workflows/` directory. The workflow must have a `dist/src/run.js` script. A preflight check verifies the LLM server is reachable before any work begins. The run ID is printed immediately so you can resume if the pipeline fails mid-way:
+
+```bash
+flomatai workflow planning --resume <run-id>
+```
 
 ---
 
