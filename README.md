@@ -321,6 +321,16 @@ flomatai run ./path/to/pipeline.ts --input '{"key": "value"}'
 # Run a pipeline from the registry
 flomatai run my-pipeline --input '{"key": "value"}'
 
+# Run verlivo planning workflow (auto-detects project)
+flomatai planning
+flomatai planning --file docs.md
+flomatai planning --resume <run-id>
+
+# Run verlivo implementation workflow
+flomatai implementation
+flomatai implementation --file plan.md
+flomatai implementation --resume <run-id>
+
 # List recent pipeline runs
 flomatai list
 
@@ -357,6 +367,8 @@ flomatai inspect <run-id> --db .flomatai/verlivo.db
 - `.flomatai/verlivo.db`
 - `.flomatai/verlivo-impl.db`
 - `.flomatai/state.db`
+
+**Verlivo workflows:** `planning` and `implementation` commands auto-detect the verlivo-flomatai project from the current directory. Use `--project <path>` to specify a custom location.
 
 ---
 

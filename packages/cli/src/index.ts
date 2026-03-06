@@ -4,9 +4,12 @@
  *
  * Commands:
  *   flomatai run <pipeline>      Execute a pipeline from a module file
+ *   flomatai planning            Run verlivo planning workflow
+ *   flomatai implementation     Run verlivo implementation workflow
  *   flomatai list                List recent pipeline runs
  *   flomatai inspect <runId>     Inspect a specific run
- *   flomatai resume <runId>      Resume a failed run from checkpoints (alias for run --resume)
+ *   flomatai watch                Watch a running pipeline
+ *   flomatai resume <runId>      Resume a failed run from checkpoints
  */
 
 import { Command } from 'commander';
@@ -16,6 +19,8 @@ import { registerInspectCommand } from './commands/inspect.js';
 import { registerListCommand } from './commands/list.js';
 import { registerPipelineCommands } from './commands/pipeline.js';
 import { registerWatchCommand } from './commands/watch.js';
+import { registerPlanningCommand } from './commands/planning.js';
+import { registerImplementationCommand } from './commands/implementation.js';
 
 const VERSION = '0.1.0';
 
@@ -68,6 +73,8 @@ registerInspectCommand(program, lazyGet);
 registerListCommand(program, lazyGet);
 registerWatchCommand(program, lazyGet);
 registerPipelineCommands(program);
+registerPlanningCommand(program);
+registerImplementationCommand(program);
 
 // Shorthand: flomatai resume <runId> <pipeline>
 program
