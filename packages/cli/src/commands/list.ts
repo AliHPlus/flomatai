@@ -1,32 +1,14 @@
 /**
  * flomatai list — list recent pipeline runs.
+ *
+ * Auto-discovers SQLite databases in:
+ *   .flomatai/*.db          (cwd)
+ *   workflows/[name]/.flomatai/*.db  (workflow subdirs)
+ * All discovered DBs are merged and sorted by start time.
  */
 
 import type { Command } from 'commander';
-import { existsSync } from 'fs';
-import { sqliteStore } from '@flomatai/state-sqlite';
-
-async function getStateStore(dbPath?: string): Promise<{ listRuns: (filter?: { pipelineName?: string; status?: string; limit?: number }) => Promise<unknown[]>; close: () => Promise<void> } | null> {
-  if (dbPath && existsSync(dbPath)) {
-    const store = sqliteStore(dbPath);
-    await store.init();
-    return store;
-  }
-
-  const autoPaths = [
-    '.flomatai/verlivo.db',
-    '.flomatai/verlivo-impl.db',
-    '.flomatai/state.db',
-  ];
-  for (const p of autoPaths) {
-    if (existsSync(p)) {
-      const store = sqliteStore(p);
-      await store.init();
-      return store;
-    }
-  }
-  return null;
-}
+import { resolveAllStores, noDbFoundError } from './db-discovery.js';
 
 export function registerListCommand(program: Command, _getOrchestrator: () => unknown): void {
   program
@@ -35,44 +17,73 @@ export function registerListCommand(program: Command, _getOrchestrator: () => un
     .option('-d, --db <path>', 'Path to SQLite database (auto-detected if not provided)')
     .option('-n, --pipeline <name>', 'Filter by pipeline name')
     .option('-s, --status <status>', 'Filter by status (completed|failed|running|pending)')
-    .option('-l, --limit <n>', 'Max results (default: 20)', '20')
+    .option('-l, --limit <n>', 'Max results per database (default: 20)', '20')
     .action(async (options: Record<string, string>) => {
       const dbPath = options['db'] as string | undefined;
-      const state = await getStateStore(dbPath);
+      const stores = await resolveAllStores(dbPath);
 
-      if (!state) {
-        console.error('[flomatai] No state database found. Specify --db or run from a project directory.');
+      if (stores.length === 0) {
+        noDbFoundError();
         process.exit(1);
       }
 
-      const runs = await state.listRuns({
-        pipelineName: options['pipeline'],
-        status: options['status'],
-        limit: parseInt(options['limit'] ?? '20'),
-      }) as Array<{ id: string; pipelineName: string; status: string; startedAt: string; tokensUsed: number }>;
+      const limit = parseInt(options['limit'] ?? '20');
 
-      if (runs.length === 0) {
+      // Collect runs from all stores
+      type Run = {
+        id: string;
+        pipelineName: string;
+        status: string;
+        startedAt: string;
+        tokensUsed: number;
+        _db: string;
+      };
+
+      const allRuns: Run[] = [];
+
+      for (const { store, dbPath: dp } of stores) {
+        try {
+          const runs = (await store.listRuns({
+            pipelineName: options['pipeline'],
+            status: options['status'],
+            limit,
+          })) as unknown as Run[];
+          for (const r of runs) {
+            allRuns.push({ ...r, _db: dp });
+          }
+        } finally {
+          await store.close();
+        }
+      }
+
+      if (allRuns.length === 0) {
         console.log('No runs found.');
-        await state.close();
         return;
       }
+
+      // Sort merged results newest-first
+      allRuns.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 
       const pad = (s: string, n: number) => s.substring(0, n).padEnd(n);
       const statusEmoji: Record<string, string> = {
         completed: '✓', failed: '✗', running: '⟳', pending: '○', cancelled: '⊘',
       };
 
-      console.log(`\n${pad('STATUS', 4)} ${pad('RUN ID', 38)} ${pad('PIPELINE', 30)} ${pad('STARTED', 24)} TOKENS`);
-      console.log('─'.repeat(110));
+      const showDb = stores.length > 1 || !dbPath;
+      const dbColWidth = showDb ? 28 : 0;
+      const dbHeader = showDb ? ` ${pad('DATABASE', dbColWidth - 1)}` : '';
 
-      for (const run of runs) {
+      console.log(`\n${pad('STAT', 4)} ${pad('RUN ID', 38)} ${pad('PIPELINE', 30)} ${pad('STARTED', 24)} TOKENS${dbHeader}`);
+      console.log('─'.repeat(showDb ? 110 + dbColWidth : 110));
+
+      for (const run of allRuns) {
         const emoji = statusEmoji[run.status] ?? '?';
+        const dbSuffix = showDb ? ` ${pad(run._db.replace(process.cwd() + '/', ''), dbColWidth)}` : '';
         console.log(
-          `${emoji}    ${pad(run.id, 38)} ${pad(run.pipelineName, 30)} ${pad(run.startedAt, 24)} ${run.tokensUsed}`,
+          `${emoji}    ${pad(run.id, 38)} ${pad(run.pipelineName, 30)} ${pad(run.startedAt, 24)} ${String(run.tokensUsed).padEnd(6)}${dbSuffix}`,
         );
       }
 
-      console.log(`\n${runs.length} run(s) shown.`);
-      await state.close();
+      console.log(`\n${allRuns.length} run(s) shown${stores.length > 1 ? ` across ${stores.length} databases` : ''}.`);
     });
 }

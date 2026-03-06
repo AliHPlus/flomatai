@@ -1,36 +1,11 @@
 /**
  * flomatai watch — watch a running pipeline and show progress in real-time.
+ *
+ * Auto-discovers SQLite databases in .flomatai/ and workflows/[name]/.flomatai/.
  */
 
 import type { Command } from 'commander';
-import { existsSync } from 'fs';
-import { sqliteStore } from '@flomatai/state-sqlite';
-
-async function getStateStore(dbPath?: string): Promise<{
-  getRun: (id: string) => Promise<unknown>;
-  listRuns: (filter?: { limit?: number }) => Promise<unknown[]>;
-  close: () => Promise<void>;
-} | null> {
-  if (dbPath && existsSync(dbPath)) {
-    const store = sqliteStore(dbPath);
-    await store.init();
-    return store;
-  }
-
-  const autoPaths = [
-    '.flomatai/verlivo.db',
-    '.flomatai/verlivo-impl.db',
-    '.flomatai/state.db',
-  ];
-  for (const p of autoPaths) {
-    if (existsSync(p)) {
-      const store = sqliteStore(p);
-      await store.init();
-      return store;
-    }
-  }
-  return null;
-}
+import { resolveAllStores, resolveStore, noDbFoundError } from './db-discovery.js';
 
 export function registerWatchCommand(program: Command, _getOrchestrator: () => unknown): void {
   program
@@ -42,31 +17,51 @@ export function registerWatchCommand(program: Command, _getOrchestrator: () => u
       const dbPath = options['db'] as string | undefined;
       const interval = parseInt(options['interval'] as string, 10) || 5000;
 
-      const state = await getStateStore(dbPath);
-      if (!state) {
-        console.error('[flomatai] No state database found. Specify --db or run from a project directory.');
-        process.exit(1);
-      }
-
-      // If no runId provided, find the latest running or most recent
+      // If no runId, search all DBs for the most recent run
       if (!runId) {
-        const runs = await (state as { listRuns: (filter?: unknown) => Promise<unknown[]> }).listRuns?.({}) as Array<{ id: string; status: string }> | undefined;
-        if (!runs || runs.length === 0) {
+        const allStores = await resolveAllStores(dbPath);
+        if (allStores.length === 0) {
+          noDbFoundError();
+          process.exit(1);
+        }
+
+        type RunRef = { id: string; status: string; startedAt: string; _db: string };
+        const candidates: RunRef[] = [];
+
+        for (const { store, dbPath: dp } of allStores) {
+          try {
+            const runs = (await store.listRuns({ limit: 5 })) as unknown as RunRef[];
+            for (const r of runs) candidates.push({ ...r, _db: dp });
+          } finally {
+            await store.close();
+          }
+        }
+
+        if (candidates.length === 0) {
           console.log('[flomatai] No runs found.');
           process.exit(0);
         }
-        // Find most recent running, or fall back to most recent
-        const running = runs.find((r) => r.status === 'running');
-        runId = running?.id ?? runs[0]!.id;
-        console.log(`[flomatai] Watching latest run: ${runId}`);
+
+        // Prefer running, then most recent overall
+        candidates.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+        const running = candidates.find((r) => r.status === 'running');
+        const chosen = running ?? candidates[0]!;
+        runId = chosen.id;
+        console.log(`[flomatai] Watching run: ${runId}`);
+        // Pin dbPath so we poll the right store
+        options['db'] = chosen._db;
       }
 
+      // Now watch the specific run using a single resolved store
+      const resolved = await resolveStore(options['db']);
+      if (!resolved) {
+        noDbFoundError();
+        process.exit(1);
+      }
+      const { store } = resolved;
+
       const statusEmoji: Record<string, string> = {
-        completed: '✓',
-        failed: '✗',
-        running: '⟳',
-        pending: '○',
-        cancelled: '⊘',
+        completed: '✓', failed: '✗', running: '⟳', pending: '○', cancelled: '⊘',
       };
 
       let lastStatus = '';
@@ -78,12 +73,11 @@ export function registerWatchCommand(program: Command, _getOrchestrator: () => u
         tokensUsed?: number;
         error?: string;
       }) => {
-        // Clear previous output if possible
         console.log('\x1b[2J\x1b[H');
         console.log(`\n${statusEmoji[run.status] ?? '?'} Run: ${runId}`);
         console.log(`  Status: ${run.status}`);
         if (run.tokensUsed) console.log(`  Tokens: ${run.tokensUsed}`);
-        if (run.error) console.log(`  Error:  ${run.error}`);
+        if (run.error)      console.log(`  Error:  ${run.error}`);
 
         if (run.steps?.length) {
           console.log('\nSteps:');
@@ -97,7 +91,7 @@ export function registerWatchCommand(program: Command, _getOrchestrator: () => u
       // eslint-disable-next-line no-constant-condition
       while (true) {
         try {
-          const run = await state.getRun(runId!) as {
+          const run = await store.getRun(runId!) as {
             status: string;
             steps?: Array<{ name: string; status: string; durationMs?: number }>;
             tokensUsed?: number;
@@ -112,7 +106,6 @@ export function registerWatchCommand(program: Command, _getOrchestrator: () => u
           const currentStatus = run.status;
           const currentSteps = run.steps?.map((s) => `${s.name}:${s.status}`) ?? [];
 
-          // Only print if status changed or steps changed
           if (currentStatus !== lastStatus || JSON.stringify(currentSteps) !== JSON.stringify(lastSteps)) {
             printStatus(run);
             lastStatus = currentStatus;
@@ -131,7 +124,7 @@ export function registerWatchCommand(program: Command, _getOrchestrator: () => u
         }
       }
 
-      await state.close();
+      await store.close();
       process.exit(0);
     });
 }
