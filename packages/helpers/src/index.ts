@@ -134,5 +134,10 @@ export function resolveOpenCodeServer(
   return openCodeServer({
     providerID: options.providerID ?? 'anthropic',
     modelID: options.modelID ?? process.env['LLM_MODEL'] ?? 'claude-sonnet-4-6',
+    // Long-running pipelines need more tolerance for transient connection drops.
+    // 5 retries × exponential backoff (2s, 4s, 8s, 16s, 32s) = up to ~62s of retrying
+    // before a single LLM call is declared dead.
+    retries: 5,
+    retryDelay: 2_000,
   });
 }

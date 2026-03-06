@@ -1,6 +1,6 @@
 {
   "name": "@flomatai/helpers",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shared helpers for flomatai examples: LLM resolution from env vars, SQLite orchestrator factory",
   "license": "GPL-3.0-or-later",
   "type": "module",
@@ -18,11 +18,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@flomatai/core": "workspace:*",
-    "@flomatai/provider-anthropic": "workspace:*",
-    "@flomatai/provider-openai-compat": "workspace:*",
-    "@flomatai/provider-opencode-server": "workspace:*",
-    "@flomatai/state-sqlite": "workspace:*"
+    "@flomatai/core": "^0.1.1",
+    "@flomatai/provider-anthropic": "^0.1.0",
+    "@flomatai/provider-openai-compat": "^0.1.0",
+    "@flomatai/provider-opencode-server": "^0.1.1",
+    "@flomatai/state-sqlite": "^0.1.3"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
