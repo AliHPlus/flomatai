@@ -1,6 +1,6 @@
 {
   "name": "@flomatai/cli",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "CLI for flomatai — run pipelines, inspect runs, resume from checkpoints",
   "license": "GPL-3.0-or-later",
   "type": "module",
