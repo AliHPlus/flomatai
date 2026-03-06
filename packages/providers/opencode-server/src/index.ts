@@ -75,9 +75,21 @@ export interface OpenCodeServerConfig {
 
   /**
    * Request timeout in ms. OpenCode can be slow on long completions.
-   * @default 600_000 (10 minutes)
+   * @default 900_000 (15 minutes)
    */
   timeout?: number;
+
+  /**
+   * Number of retries for transient network errors.
+   * @default 3
+   */
+  retries?: number;
+
+  /**
+   * Base delay for exponential backoff retry (ms).
+   * @default 1000
+   */
+  retryDelay?: number;
 }
 
 // ── Internal API types ────────────────────────────────────────────────────────
@@ -131,6 +143,8 @@ export class OpenCodeServerProvider implements LLMProvider {
   private readonly providerID: string;
   private readonly modelID: string;
   private readonly timeout: number;
+  private readonly retries: number;
+  private readonly retryDelay: number;
   private readonly authHeader: string | undefined;
 
   constructor(config: OpenCodeServerConfig = {}) {
@@ -143,7 +157,9 @@ export class OpenCodeServerProvider implements LLMProvider {
     this.providerID = config.providerID ?? 'anthropic';
     this.modelID = config.modelID ?? process.env['LLM_MODEL'] ?? 'claude-sonnet-4-6';
     this.model = `${this.providerID}/${this.modelID}`;
-    this.timeout = config.timeout ?? 600_000;
+    this.timeout = config.timeout ?? 900_000; // 15 min default
+    this.retries = config.retries ?? 3;
+    this.retryDelay = config.retryDelay ?? 1000;
 
     // HTTP basic auth
     const password =
@@ -304,12 +320,15 @@ export class OpenCodeServerProvider implements LLMProvider {
   }
 
   private async deleteSession(sessionID: string): Promise<void> {
-    await this.fetch(`/session/${sessionID}`, { method: 'DELETE' });
+    await this.fetch(`/session/${sessionID}`, { method: 'DELETE' }).catch(() => {
+      /* ignore cleanup failures */
+    });
   }
 
-  private async fetch(
+  private async fetchWithRetry(
     path: string,
     init: RequestInit = {},
+    attempt = 1,
   ): Promise<Response> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -330,7 +349,22 @@ export class OpenCodeServerProvider implements LLMProvider {
         signal: controller.signal,
       });
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
+      clearTimeout(timer);
+
+      const isAbort = err instanceof Error && err.name === 'AbortError';
+      const isRetryable =
+        err instanceof TypeError && err.message.includes('fetch failed');
+
+      if ((isAbort || isRetryable) && attempt < this.retries) {
+        const delay = this.retryDelay * Math.pow(2, attempt - 1);
+        console.warn(
+          `[OpenCodeServer] ${isAbort ? 'Timeout' : 'Fetch failed'}, retry ${attempt}/${this.retries} in ${delay}ms`,
+        );
+        await new Promise((r) => setTimeout(r, delay));
+        return this.fetchWithRetry(path, init, attempt + 1);
+      }
+
+      if (isAbort) {
         throw new LLMError(this.name, `Request timed out after ${this.timeout}ms`);
       }
       throw new LLMError(
@@ -340,6 +374,14 @@ export class OpenCodeServerProvider implements LLMProvider {
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  // Keep backward compatibility - redirect fetch to fetchWithRetry
+  private async fetch(
+    path: string,
+    init: RequestInit = {},
+  ): Promise<Response> {
+    return this.fetchWithRetry(path, init);
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@flomatai/provider-opencode-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenCode server (opencode serve) provider for flomatai — wraps the session-based HTTP API as a standard LLMProvider",
   "license": "GPL-3.0-or-later",
   "type": "module",
