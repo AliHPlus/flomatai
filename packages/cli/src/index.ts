@@ -13,6 +13,7 @@
 
 import { Command } from 'commander';
 import { Orchestrator, MemoryStore } from '@flomatai/core';
+import { createRequire } from 'module';
 import { registerRunCommand } from './commands/run.js';
 import { registerInspectCommand } from './commands/inspect.js';
 import { registerListCommand } from './commands/list.js';
@@ -20,7 +21,8 @@ import { registerPipelineCommands } from './commands/pipeline.js';
 import { registerWatchCommand } from './commands/watch.js';
 import { registerRunWorkflowCommand } from './commands/run-workflow.js';
 
-const VERSION = '0.1.0';
+const require = createRequire(import.meta.url);
+const { version: VERSION } = require('../package.json') as { version: string };
 
 const program = new Command();
 
