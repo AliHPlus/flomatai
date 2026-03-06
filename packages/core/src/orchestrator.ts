@@ -280,6 +280,7 @@ export class Orchestrator {
               runId,
               abortController.signal,
               emit,
+              options.resumeFromRunId,
             );
             lastError = null;
             break;
@@ -370,6 +371,7 @@ export class Orchestrator {
     runId: string,
     abortSignal: AbortSignal,
     emit: (event: string, data: unknown) => void,
+    resumeFromRunId?: string,
   ): Promise<unknown> {
     switch (step.kind) {
       case 'skill': {
@@ -385,7 +387,7 @@ export class Orchestrator {
         if (!Array.isArray(source)) {
           throw new PipelineError('?', `Step "${step.name}" map source "${step.sourceField}" is not an array`);
         }
-        return this.runMap(step, source, makeSkillCtx, runId, abortSignal, emit);
+        return this.runMap(step, source, makeSkillCtx, runId, abortSignal, emit, resumeFromRunId);
       }
 
       case 'filter': {
@@ -443,6 +445,7 @@ export class Orchestrator {
     runId: string,
     abortSignal: AbortSignal,
     emit: (event: string, data: unknown) => void,
+    resumeFromRunId?: string,
   ): Promise<unknown[]> {
     const concurrency = step.concurrency ?? 1;
     const results: unknown[] = new Array(items.length);
@@ -454,11 +457,18 @@ export class Orchestrator {
         batch.map(async (item, batchIdx) => {
           const idx = i + batchIdx;
           const maxAttempts = (step.maxItemRetries ?? 0) + 1;
+          const subRunId = `${runId}:${step.name}[${idx}]`;
+          // When resuming, pass the matching sub-run resume ID so the
+          // sub-pipeline can skip already-checkpointed steps.
+          const subResumeId = resumeFromRunId
+            ? `${resumeFromRunId}:${step.name}[${idx}]`
+            : undefined;
 
           for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
               const result = await this.run(step.subPipeline!, item, {
-                runId: `${runId}:${step.name}[${idx}]`,
+                runId: subRunId,
+                resumeFromRunId: subResumeId,
                 abortController: { signal: abortSignal } as AbortController,
               });
               return { idx, output: result.output, error: null };
