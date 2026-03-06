@@ -327,6 +327,17 @@ flomatai list
 # Inspect a specific run
 flomatai inspect <run-id>
 
+# Inspect with step details
+flomatai inspect <run-id> --steps
+
+# Inspect a specific step's output
+flomatai inspect <run-id> --step-output use-cases
+
+# Watch a running pipeline in real-time
+flomatai watch
+flomatai watch <run-id>
+flomatai watch -i 3000    # custom poll interval (ms)
+
 # Resume a failed run
 flomatai resume <run-id> ./path/to/pipeline.ts
 
@@ -336,7 +347,16 @@ flomatai pipeline install ./path/to/pipeline
 flomatai pipeline install @org/their-pipeline
 flomatai pipeline inspect <name>
 flomatai pipeline uninstall <name>
+
+# All commands support --db to specify SQLite database path
+flomatai list --db .flomatai/verlivo.db
+flomatai inspect <run-id> --db .flomatai/verlivo.db
 ```
+
+**Auto-detection:** `list`, `inspect`, and `watch` automatically find SQLite databases in:
+- `.flomatai/verlivo.db`
+- `.flomatai/verlivo-impl.db`
+- `.flomatai/state.db`
 
 ---
 
@@ -346,11 +366,21 @@ flomatai pipeline uninstall <name>
 |---|---|
 | `ANTHROPIC_API_KEY` | Anthropic API key |
 | `OPENAI_API_KEY` | OpenAI API key |
-| `OPENCODE_BASE_URL` | Base URL for OpenAI-compatible endpoint |
 | `LLM_MODEL` | Model name override |
+| `OPENCODE_BASE_URL` | Base URL for OpenAI-compatible endpoint |
 | `USE_OPENCODE` | Set to `1` to use the OpenAI-compatible endpoint |
 
-`resolveLLMFromEnv()` from `@flomatai/helpers` reads these automatically and selects the right provider.
+### OpenCode Server provider
+
+When using `@flomatai/provider-opencode-server`:
+
+| Variable | Description |
+|---|---|
+| `OPENCODE_SERVER_URL` | Base URL of `opencode serve` (e.g., `http://localhost:4096`) |
+| `OPENCODE_SERVER_PASSWORD` | HTTP basic auth password (optional) |
+| `OPENCODE_SERVER_USERNAME` | HTTP basic auth username (default: `opencode`) |
+
+`resolveOpenCodeServer()` from `@flomatai/helpers` reads these automatically.
 
 ---
 
