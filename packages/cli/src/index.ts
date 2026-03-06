@@ -4,7 +4,7 @@
  *
  * Commands:
  *   flomatai run <pipeline>      Execute a pipeline from a module file
- *   flomatai run-workflow <name> Run a local workflow from workflows/ directory
+ *   flomatai workflow <name>      Run a local workflow from workflows/ directory
  *   flomatai list                List recent pipeline runs
  *   flomatai inspect <runId>     Inspect a specific run
  *   flomatai watch                Watch a running pipeline

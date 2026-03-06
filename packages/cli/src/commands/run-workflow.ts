@@ -1,5 +1,5 @@
 /**
- * flomatai run-workflow — run a local workflow by name.
+ * flomatai workflow — run a local workflow by name.
  *
  * Looks for a workflows/ directory in the current project and runs
  * the specified workflow by name.
@@ -26,7 +26,7 @@ function findWorkflowsDir(startDir: string): string | null {
 
 export function registerRunWorkflowCommand(program: Command): void {
   program
-    .command('run-workflow <name>')
+    .command('workflow <name>')
     .description('Run a local workflow by name from the workflows/ directory')
     .option('-f, --file <path>', 'Input file to pass to the workflow')
     .option('-r, --resume <run-id>', 'Resume from a failed run checkpoint')
@@ -51,7 +51,7 @@ export function registerRunWorkflowCommand(program: Command): void {
         console.error('      ├── src/run.ts');
         console.error('      └── package.json');
         console.error('');
-        console.error('Then run: flomatai run-workflow <name>');
+        console.error('Then run: flomatai workflow <name>');
         process.exit(1);
       }
 
