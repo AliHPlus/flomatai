@@ -14,7 +14,7 @@ function findWorkflowsDir(startDir: string): string | null {
   let dir = startDir;
   for (let i = 0; i < 10; i++) {
     const workflowsDir = resolve(dir, 'workflows');
-    if (existsSync(workflowsDir) && readdirSync(workflowsDir).some(f => f.endsWith('.ts') || f.endsWith('.js'))) {
+    if (existsSync(workflowsDir) && readdirSync(workflowsDir).some(f => existsSync(resolve(workflowsDir, f, 'package.json')))) {
       return workflowsDir;
     }
     const parent = resolve(dir, '..');
@@ -80,12 +80,13 @@ export function registerRunWorkflowCommand(program: Command): void {
       console.log(`[flomatai] Workflow dir: ${workflowDir}`);
 
       const env = { ...process.env };
-      const envFile = resolve(workflowDir, '..', '.env');
-      if (existsSync(envFile)) {
+      const envFile = resolve(workflowDir, '..', '..', '.env');
+      const envFileArg = existsSync(envFile) ? [`--env-file=${envFile}`] : [];
+      if (envFileArg.length) {
         console.log(`[flomatai] Loading environment from: ${envFile}`);
       }
 
-      const child = spawn('node', ['--env-file=../.env', 'dist/src/run.js', ...runArgs], {
+      const child = spawn('node', [...envFileArg, 'dist/src/run.js', ...runArgs], {
         cwd: workflowDir,
         env,
         stdio: 'inherit',
