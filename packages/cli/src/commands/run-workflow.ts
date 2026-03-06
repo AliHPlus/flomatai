@@ -30,6 +30,7 @@ export function registerRunWorkflowCommand(program: Command): void {
     .description('Run a local workflow by name from the workflows/ directory')
     .option('-f, --file <path>', 'Input file to pass to the workflow')
     .option('-r, --resume <run-id>', 'Resume from a failed run checkpoint')
+    .option('-p, --phase <phases>', 'Run only services in these phases (e.g. 0 or 0,1,2)')
     .option('-w, --watch', 'Auto-start flomatai watch after running')
     .option('-d, --dir <path>', 'Path to workflows directory (auto-detected)')
     .action(async (name: string, options: Record<string, string | boolean>) => {
@@ -71,6 +72,9 @@ export function registerRunWorkflowCommand(program: Command): void {
       const runArgs: string[] = [];
       if (options['file']) {
         runArgs.push('--file', options['file'] as string);
+      }
+      if (options['phase']) {
+        runArgs.push('--phase', options['phase'] as string);
       }
       if (options['resume']) {
         runArgs.push('--resume', options['resume'] as string);
