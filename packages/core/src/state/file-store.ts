@@ -101,6 +101,11 @@ export class FileStore implements StateStore {
     return runs.slice(offset, offset + limit);
   }
 
+  async deleteRun(runId: string): Promise<void> {
+    delete this.data.runs[runId];
+    await this.clearCheckpoints(runId);
+  }
+
   async saveCheckpoint(runId: string, stepName: string, data: unknown): Promise<void> {
     this.data.checkpoints[`${runId}::${stepName}`] = data;
     await this.flush();

@@ -66,6 +66,11 @@ export class MemoryStore implements StateStore {
     return runs.slice(offset, offset + limit);
   }
 
+  async deleteRun(runId: string): Promise<void> {
+    this.runs.delete(runId);
+    await this.clearCheckpoints(runId);
+  }
+
   async saveCheckpoint(runId: string, stepName: string, data: unknown): Promise<void> {
     this.checkpoints.set(`${runId}::${stepName}`, data);
   }

@@ -34,6 +34,8 @@ export interface StateStore {
   getRun(runId: string): Promise<PipelineRun | null>;
   /** List runs, newest first. */
   listRuns(filter?: RunFilter): Promise<PipelineRun[]>;
+  /** Delete a run and its checkpoints by ID. */
+  deleteRun(runId: string): Promise<void>;
 
   // ── Checkpoints (for resume) ─────────────────────────────────────────────
 

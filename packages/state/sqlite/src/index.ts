@@ -195,6 +195,11 @@ export class SQLiteStore implements StateStore {
     catch { return null; }
   }
 
+  async deleteRun(runId: string): Promise<void> {
+    this.conn.prepare('DELETE FROM pipeline_runs WHERE id = ?').run(runId);
+    this.conn.prepare('DELETE FROM checkpoints WHERE run_id = ?').run(runId);
+  }
+
   async clearCheckpoints(runId: string): Promise<void> {
     this.conn.prepare('DELETE FROM checkpoints WHERE run_id = ?').run(runId);
   }

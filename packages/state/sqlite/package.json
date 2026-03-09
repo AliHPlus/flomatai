@@ -1,6 +1,6 @@
 {
   "name": "@flomatai/state-sqlite",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "description": "SQLite persistence adapter for flomatai — run history, caching, checkpoint/resume",
   "license": "GPL-3.0-or-later",
   "type": "module",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
-    "@flomatai/core": "workspace:*"
+    "@flomatai/core": "^0.1.4"
   },
   "devDependencies": {
     "typescript": "^5.5.0",

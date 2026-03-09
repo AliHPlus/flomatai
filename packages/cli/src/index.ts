@@ -20,6 +20,7 @@ import { registerListCommand } from './commands/list.js';
 import { registerPipelineCommands } from './commands/pipeline.js';
 import { registerWatchCommand } from './commands/watch.js';
 import { registerRunWorkflowCommand } from './commands/run-workflow.js';
+import { registerCleanCommand } from './commands/clean.js';
 
 const require = createRequire(import.meta.url);
 const { version: VERSION } = require('../package.json') as { version: string };
@@ -74,6 +75,7 @@ registerListCommand(program, lazyGet);
 registerWatchCommand(program, lazyGet);
 registerPipelineCommands(program);
 registerRunWorkflowCommand(program);
+registerCleanCommand(program);
 
 // Shorthand: flomatai resume <runId> <pipeline>
 program

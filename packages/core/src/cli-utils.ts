@@ -30,29 +30,39 @@ export function hasFlag(flag: string): boolean {
 /**
  * Read a text document from the first available source:
  *   1. `--file <path>` CLI flag
- *   2. `envVar` environment variable (if provided)
- *   3. stdin (when not a TTY)
- *   4. `fallback` string (demo/default content)
+ *   2. `fileEnvVar` environment variable containing a file path (e.g. 'DOCS_FILE')
+ *   3. `envVar` environment variable containing the content (e.g. 'DOCS')
+ *   4. stdin (when not a TTY)
+ *   5. `fallback` string (demo/default content)
  *
  * Logs a one-line message indicating which source was used.
  *
- * @param options.envVar   Environment variable name to check (e.g. 'DOCS').
- * @param options.fallback Demo text to use when no other source is available.
- * @param options.label    Human-readable name for the input (e.g. 'documentation').
- *                         Used in log messages. Defaults to 'input'.
+ * @param options.envVar     Environment variable name holding content (e.g. 'DOCS').
+ * @param options.fileEnvVar Environment variable name holding a file path (e.g. 'DOCS_FILE').
+ * @param options.fallback   Demo text to use when no other source is available.
+ * @param options.label      Human-readable name for the input (e.g. 'documentation').
  */
 export async function readTextInput(options: {
   envVar?: string;
+  fileEnvVar?: string;
   fallback?: string;
   label?: string;
 }): Promise<string> {
-  const { envVar, fallback = '', label = 'input' } = options;
+  const { envVar, fileEnvVar, fallback = '', label = 'input' } = options;
+  const { readFile } = await import('fs/promises');
 
   const filePath = getArg('--file');
   if (filePath) {
-    const { readFile } = await import('fs/promises');
-    const text = await readFile(filePath, 'utf-8');
-    console.log(`Reading ${label} from: ${filePath}`);
+    const resolved = filePath.replace(/^~/, process.env['HOME'] ?? '');
+    const text = await readFile(resolved, 'utf-8');
+    console.log(`Reading ${label} from: ${resolved}`);
+    return text;
+  }
+
+  if (fileEnvVar && process.env[fileEnvVar]) {
+    const resolved = process.env[fileEnvVar]!.replace(/^~/, process.env['HOME'] ?? '');
+    console.log(`Reading ${label} from: ${resolved}`);
+    const text = await readFile(resolved, 'utf-8');
     return text;
   }
 

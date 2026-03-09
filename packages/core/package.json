@@ -1,6 +1,6 @@
 {
   "name": "@flomatai/core",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Core framework: Skills, Agents, Pipeline DSL, Orchestrator",
   "license": "GPL-3.0-or-later",
   "type": "module",
